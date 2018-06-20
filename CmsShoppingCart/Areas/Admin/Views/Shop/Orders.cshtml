@@ -1,0 +1,63 @@
+﻿@model IEnumerable<CmsShoppingCart.Areas.Admin.Models.Shop.OrderForAdminVM>
+
+@{
+    ViewBag.Title = "Orders";
+}
+
+<h2>Orders</h2>
+
+@if (!Model.Any())
+{
+    <h3 class="text-center text-info">There are no Orders..!</h3>
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>
+                OrderNumber
+            </th>
+            <th>
+                UserName
+            </th>
+            <th>Order Details</th>
+
+            <th>
+                Create AT
+            </th>
+            <th>
+                Total
+            </th>
+
+        </tr>
+
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.OrderNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+
+            <td>
+                @*Loop through the dictionary*@
+            @foreach (var item2 in item.ProductsAndQty)
+            {
+                    @item2.Key @:x @item2.Value <br />
+            }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreateAT)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Total)
+            </td>
+
+        </tr>
+        }
+
+    </table>
+}
+

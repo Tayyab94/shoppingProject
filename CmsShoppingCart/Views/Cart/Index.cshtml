@@ -1,0 +1,392 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.Cart.CartVM>
+
+@{
+    ViewBag.Title = "Cart-Detail";
+    int count = 1;
+}
+@section mystyle{
+
+    <style type="text/css">
+        .ajaxbg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: white;
+        }
+
+            .ajaxbg span {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate3d(-50%,-50%,0);
+                z-index: 1;
+            }
+
+        form .paypalform {
+            position: absolute;
+            left: -2000px;
+        }
+    </style>
+
+}
+
+<h2>Cart-Detail</h2>
+
+@if (ViewBag.Message != null)
+{
+    <h4 class="text-danger">@ViewBag.Message</h4>
+}
+else
+{
+    <p class="Notification text-danger">
+
+    </p>
+
+    <div class="ajaxbg" @*style="position:absolute;width:100%;height:100%;display:none;background:white;"*@>
+        <span @*style="position:absolute;top:50%;left:50%;transform:translate3d(-50%,-50%,0);z-index:1;"*@>
+            <img src="~/Content/img/loading-dir.gif" />
+        </span>
+
+    </div>
+    <table class="table table-responsive">
+        <tr>
+
+            <th>
+                Name
+            </th>
+            <th>
+                Quantity
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Image
+            </th>
+            <th>
+
+            </th>
+            <th>
+                Total
+            </th>
+            <th></th>
+
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProductName)
+                </td>
+                <td class="qty@(item.ProductID)">
+                    @*Manipulate the quantity*@
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    $ @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    <img src="/Images/Uploads/Products/@item.ProductID/Thumbs/@item.ProductImage" class="img-responsive" width="40" height="30" />
+                </td>
+
+
+                <td>
+                    <a href="#" class="incrProduct"  data-id="@item.ProductID"><span class="glyphicon glyphicon-plus-sign" style="color:#0D56A0"></span></a>
+                    <a href="#" class="decProduct" data-id="@item.ProductID"><span class="glyphicon glyphicon-minus-sign" style="color:red"></span></a>
+                    <a href="#" class="removeProduct" data-id="@item.ProductID"><span class="glyphicon glyphicon-trash" style="color:red"></span></a>
+                </td>
+                @*Manipulate the total of the product*@
+                <td class="total@(item.ProductID)">
+                    $:@Html.DisplayFor(modelItem => item.Total)
+                </td>
+            </tr>
+        }
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="grandtotal"><b class="text-info">Grand Total</b>$:<span>@ViewBag.GrandTotal</span></td>
+        </tr>
+
+    </table>
+
+    <div class="paypaldiv">
+        <form class="paypalform" action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" style=" position: absolute;left: -2000px;">
+            <input type="hidden" name="cmd" value="_cart">                @*replease value="_cart"*@
+
+            <input type="hidden" name="upload" value="1">
+
+            <input type="hidden" name="business" value="test-business@b2bx.net"> @*Paste BusinessEMail here*@
+
+            @foreach (var item in Model)
+            {
+                <input type="hidden" name="item_name_@count" value="@item.ProductName">
+                <input type="hidden" name="amount_@count" value="@item.Price">
+                <input type="hidden" name="quantity_@count" value="@item.Quantity"> @*for Quantity*@
+
+                count++;
+            }
+
+            <input type="hidden" name="currency_code" value="USD">
+
+            <input type="image" src="http://www.paypal.com/en_US/i/btn/x-click-but01.gif" name="submit" alt="Make payments with PayPal - it's fast, free and secure!">
+        </form>
+    </div>
+
+    <br />
+    <a href="#" class="placeorder btn btn-primary pull-right">CheckOut</a>
+
+}
+
+@section scripts{
+
+    @*Jquery File*@
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+
+    @*CDN of Jquery-ui*@
+    @*<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>*@
+    <script>
+        $(function () {
+
+            $("a.placeorder").click(function (e) {
+                e.preventDefault();
+                var $this = $(this);
+                alert("Ye ALLAH Shuker")
+                alert($this);
+                $(".ajaxbg").show();
+
+                $.ajax(
+                    {
+                        url: "/Cart/PlaceAnOrder",
+                        type: "POST",
+                        success: function (data) {
+
+                            $(".ajaxbg span").text("Thank you.. you will be now redirecting to Paypal.!");
+                            setTimeout(function () {
+
+                                $('form input[name="submit"]').click();
+                            },2000);
+                        }
+                    }
+                )
+
+
+            });
+
+
+
+
+           
+            /*
+            Increment Project in a View Cart
+             */
+            $('a.incrProduct').click(function () {
+                var productID = $(this).data("id");
+                $.ajax(
+                    {
+                        url: "/Cart/IncrementProduct",
+                        type: "GET",
+                        data: { id: productID }
+                        //success: function (data) {
+
+                        //    $("td.qty" + productID).html(data.qty);  //This qty is return form the JsaonReturn Methof
+
+                        //    var price = data.qty * data.price;          //This price is also  return form the JsaonReturn Methof
+                        //    var PriceHtml = "$" + price.toFixed(2);
+
+                        //    $("td.total" + productID).html(PriceHtml);  //Set the Price into the total Acount of the product
+
+                        //    var gt = parseFloat($("td.grandtotal span").text());
+
+                        //    var grandTotal = (gt + data.price).toFixed(2);
+                        //    $("td.grandtotal span").html(grandTotal);   //Set the Grand Total into the GrandTotal Column
+                        //    ab(data);
+
+                        //},
+                        //error: function () {
+                        //    alert("Something is wrong")
+                        //}
+                    }
+                ).done(function (data) {
+                    $("td.qty" + productID).html(data.qty);  //This qty is return form the JsaonReturn Methof
+
+                    var price = data.qty * data.price;          //This price is also  return form the JsaonReturn Methof
+                    var PriceHtml = "$" + price.toFixed(2);
+
+                    $("td.total" + productID).html(PriceHtml);  //Set the Price into the total Acount of the product
+
+                    var gt = parseFloat($("td.grandtotal span").text());
+
+                    var grandTotal = (gt + data.price).toFixed(2);
+                    $("td.grandtotal span").html(grandTotal);   //Set the Grand Total into the GrandTotal Column
+
+                    $.ajax({
+                        url: "/Cart/PaypalPartial",
+                        type: "GET",
+                        success: function (data) {
+                            $("div.paypaldiv").html(data);
+                        }
+                    });
+                });
+            });
+            /////////////////////////////////////////
+
+        
+            //Decrement Product Functon
+
+            $("a.decProduct").click(function (e) {
+                e.preventDefault();
+
+                var o = $(this);
+               
+
+                var id = $(this).data("id");
+
+                var url = "/Cart/DecrementProduct";
+                $.getJSON(url, { productID: id }, function (data) {
+
+                    if (data.qty == 0) {
+
+                        o.parent().parent().fadeOut("fast", function () {
+
+                            location.reload();
+                        });
+
+                    }
+                    else {
+
+                        $("td.qty" + id).html(data.qty);
+
+                        var price = data.qty * data.price;
+                        var priceHtml = "$" + price.toFixed(2);
+
+
+                        $("td.total" + id).html(priceHtml);
+
+                        var gt = parseFloat($("td.grandtotal span").text());
+
+                        var g_total = (gt - data.price).toFixed(2);
+
+                        $("td.grandtotal span").html(g_total);
+                    }
+
+
+                }).done(function (data) {
+                    alert(data)
+                    var url2 = "/Cart/PaypalPartial";
+                    $.get(url2, {}, function (data) {
+                        $("div.paypaldiv").html(data);
+                    })
+                });
+
+
+
+            });
+
+
+            ////Decrement the product form the Cart
+            //$("a.decProduct").click(function (e) {
+            //    e.preventDefault();
+            //    var $this = $(this);
+
+
+            //    var id = $(this).data("id");
+
+            //    $.ajax(
+            //        {
+            //            url: "/Cart/DecrementProduct",
+            //            type: "GET",
+            //            data: { id: id },
+            //            success: function (data) {
+            //                if (data.qty == 0) {
+
+            //                    $this.parent().parent().fadeOut("fast", function () {
+
+            //                        location.reload();
+            //                    });
+            //                } else {
+
+            //                    $("td.qty" + id).html(data.qty);
+
+            //                    var price = data.qty * data.price;
+            //                    var priceHtml = "$" + price.toFixed(2);
+
+
+            //                    $("td.total" + id).html(priceHtml);
+
+            //                    var gt = parseFloat($("td.grandtotal span").text());
+
+            //                    var g_total = (gt - data.price).toFixed(2);
+
+            //                    $("td.grandtotal span").html(g_total);
+
+            //                    $(".Notification").html(data.msg);
+
+            //                    setTimeout(function () {
+
+            //                        $(".Notification").fadeOut("Notification")
+            //                    }, 1000)
+            //                }
+
+            //            }, error: function () {
+            //                alert("Something is Wrong please try Again..");
+            //            }
+            //        }
+            //    ).done(function (data) {
+            //        $.ajax(
+            //            {
+            //                url1: "/Cart/PaypalPartial",
+            //                success: function (data) {
+            //                    $("div.paypaldiv").html(data);
+            //                    alert("YAhoo..");
+            //                }, error: function () {
+            //                    alert("Wrong")
+            //                }
+            //            }
+            //        )
+            //    });
+
+            //});
+
+
+
+            $("a.removeProduct").click(function (e) {
+                e.preventDefault();
+
+                var id = $(this).data("id");
+                $.ajax(
+                    {
+                        url: "/Cart/RemoveProduct",
+
+                        type: "GET",
+                        data: { id: id },
+                        success: function (data) {
+                            location.reload();
+                        },
+                        error: function () {
+                            alert("Something is Wrong");
+                        }
+
+                    }
+
+                )
+
+
+
+            });
+
+
+
+        });
+    </script>
+
+
+
+}
+

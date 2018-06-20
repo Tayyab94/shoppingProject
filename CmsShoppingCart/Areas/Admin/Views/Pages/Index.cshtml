@@ -1,0 +1,115 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModel.Pages.PagesVM>
+
+@{
+    ViewBag.Title = "Pages";
+}
+
+<h2>Pages</h2>
+
+<p>
+    @Html.ActionLink("Add New Page", "AddPage")
+</p>
+@if (!Model.Any())
+{
+    <h2 class="text-center">There are No any page..</h2>
+}
+else
+{
+
+
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                Title
+            </th>
+            <th>
+                Slug
+            </th>
+            <th>
+                HasSidebar
+            </th>
+            <th>
+             Body
+            </th>
+            <th></th>
+        </tr>
+  
+            @foreach (var item in Model)
+            {
+                <tr id="id_@item.ID" class="@item.Slug">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Slug)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.HasSidebar)
+                    </td>
+                    <td>
+                        @Html.Raw(item.Body)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Edit", "EditPage", new { id = item.ID }) |
+
+                        @Html.ActionLink("Details", "PageDetails", new { id = item.ID }) |
+                        @if (item.Slug != "home")
+                        {
+                            @Html.ActionLink("Delete", "DeletePage", new { id = item.ID }, new { @class = "delete" })
+                        }
+
+                    </td>
+                </tr>
+            }
+      
+
+
+    </table>
+}
+@section scripts{
+
+    @*Jquery File*@
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+
+    @*CDN of Jquery-ui*@ 
+    @*<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>*@
+    <script>
+        $(function () {
+            var d = "Helo";
+            console.log(d)
+            /*
+             Delete Confirmation  Funciton
+             */
+            $('a.delete').click(function () {
+                if (!confirm("Confirm Page Deletion.?")) return false;
+            });
+            /////////////////////////////////////////
+
+            /*
+         Sorting Pages  Funciton
+         */
+            $("table#pages tbody").sortable({
+
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var idss = $("table#pages tbody").sortable("serialize");
+                    //console.log(idss)
+                    var url = "/Admin/Pages/ReorderPages";
+                    $.post(url, idss, function (data) {
+                    });
+                }
+
+
+            });
+
+            /////////////////////////////////////////
+
+
+
+        });
+    </script>
+
+
+
+}

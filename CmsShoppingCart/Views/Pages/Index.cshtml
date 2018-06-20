@@ -1,0 +1,10 @@
+﻿@model CmsShoppingCart.Models.ViewModel.Pages.PagesVM
+
+@{
+    ViewBag.Title =ViewBag.PageTitle;
+
+    TempData["PageTile"] = ViewBag.Title;
+}
+
+<h2>@Html.Raw(Model.Body)</h2>
+

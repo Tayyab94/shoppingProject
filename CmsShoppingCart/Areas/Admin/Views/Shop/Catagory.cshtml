@@ -1,0 +1,333 @@
+﻿@model IEnumerable<CmsShoppingCart.Models.ViewModel.Pages.CataogryVM>
+
+@{
+    ViewBag.Title = "Catagory";
+}
+
+<h2>Catagory</h2>
+<div class="new-cat">
+    <input type="text" id="newCatName" />
+    <button id="SampleLink">Create</button>
+    <p id="mm">
+        <a href="#" id="newCata">Add New Catagory</a>
+        <span class="ajax-text">
+            <img src="~/Content/img/loading-dir.gif" id="loadImg" />
+        </span>
+    </p>
+    <div id="re"></div>
+    <!--- ye re kia hay ?
+        hahaaa ye chus mar rha tha,,-->
+</div>
+@if (!Model.Any())
+{
+    <h3 class="text-center">There is no Cagtagy yes</h3>
+}
+else
+{
+
+
+    <table class="table sorting catagories" id="pages">
+        <tr class="home">
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id">
+                <td>
+                    <div class="ajacDivTd"></div>
+                    @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                </td>
+
+                <td>
+
+                    @Html.ActionLink("Delete", "DeleteCatagory", new { id = item.Id }, new { @class = "delete" })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+
+@section scripts{
+
+    @*Jquery File*@
+    <script src="~/Scripts/jquery-ui.min.js"></script>
+
+    @*CDN of Jquery-ui*@
+    @*<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>*@
+    <script>
+
+        $(document).ready(function () {
+
+            $("#SampleLink").click(function () {
+                var n = $("#newCatName").val();
+                $.ajax({
+                    url:"/Admin/Shop/sample",
+                    type: "POST",
+                    data: { obj:n} ,
+                    success: function (data) {
+                        if (data && data.Msg == null) {
+
+                            var node = $('<tr><td>' + data.SampleName + '</td></tr>');
+
+
+                            //<td>' +attr("href", "/Admin/Shop/DeleteCatagory/" + data)+'</td >
+                            //$('#pages').find('tr:last').after(node);
+                           
+                            //if (!$("table#pages").length) {
+                            //    location.reload();
+                            //} else {
+                            //    ajaxText.html("<span class='alert alert-success'>Cagtagory has been Added!</span>");
+                            //    setTimeout(function () {
+                            //        ajaxText.fadeOut("fast", function () {
+                            //            ajaxText.html("<img src=/Content/img/loading-dir.gif />");
+                            //        });
+
+                            //    }, 2000);
+                                newCatInputtext.val("");
+                                var toAppend = $("table#pages tbody tr:last").clone();
+                                toAppend.attr("id", "id_", data);
+                                toAppend.find("#item_Name").val(data.SampleName);
+                                toAppend.find("a.delete").attr("href", "/Admin/Shop/DeleteCatagory/" + data.ID);
+                                table.append(toAppend);
+                            table.sortable("refresh");
+
+                            var mm = $("#mm");
+                            $("#mm").html('<h3 class="alert alert-success">' + data.Ms + '</h3>');
+                            setTimeout(function () {
+                                $("#mm").fadeOut(function () {
+                                    //location.reload();  
+                                    mm.css({ "display": "block" });
+                                    mm.html('')
+                                });
+
+                            }, 2000);
+
+                            //}
+                        }
+                        else {
+                            //alert(data.Msg);
+                            var mm = $("#mm");
+                            $("#mm").html('<h3 class="alert alert-danger">' + data.Msg + '</h3>');
+                            setTimeout(function () {
+                                $("#mm").fadeOut(function () {
+                                    //location.reload();  
+                                    mm.css({ "display": "block" });
+                                    mm.html('')
+                                });
+
+                                }, 2000);
+                        }
+                        //alert(data.SampleName);
+                        
+                    }
+                });
+            });
+
+            //$("#loadImg").hide();
+            /*
+       Add New Catagory  Funciton
+       */
+            var newCatA = $("a#newCata");
+            var newCatInputtext = $("#newCatName");
+            var ajaxText = $("span.ajax-text");
+            var table = $("table#pages tbody")
+
+            newCatInputtext.keyup(function (e) {
+
+                //This mean if Enter button is going to press
+
+                if (e.keyCode == 13) {
+                    newCatA.click();
+                }
+
+            });
+
+            newCatA.click(function (e) {
+
+                e.preventDefault();
+
+                var catName = newCatInputtext.val();
+                if (catName.length < 2) {
+                    alert("Catagory Name must be at least 2 charactoristic long...");
+                    return false;
+                }
+
+                ajaxText.show();
+
+                var url = "/Admin/Shop/AddNewCatagory";   //This method is going to return String
+              //$.ajax({
+              //      url:url,
+              //      type: "POST",
+              //      data: { "catName": "catName" },
+              //      success: function () {
+
+
+              //          alert("Successfully Added!");
+              //      },
+              //      error: function () {
+
+
+              //          alert("There must be some problem!");
+              //      }
+                    
+                    
+
+
+
+
+              //  });
+
+                $.post(url, { catName: catName }, function (data) {
+                    var response = data.trim();
+
+                    if (response == "titletaken") {
+                        ajaxText.html('<span class="alert alert-danger">The Title is already taken..!</span>');
+                        setTimeout(function () {
+                            ajaxText.fadeOut("fast", function () {
+                                ajaxText.html("<img src=/Content/img/loading-dir.gif />");
+
+
+                            });
+
+                        }, 2000);
+                        return false;
+
+                    }
+
+                        //New we are going to append the table withe the new dAta/Catagory Addes
+                    else {
+
+                        if (!$("table#pages").length) {
+                            location.reload();
+                        } else {
+                            ajaxText.html("<span class='alert alert-success'>Cagtagory has been Added!</span>");
+                            setTimeout(function () {
+                                ajaxText.fadeOut("fast", function () {
+                                    ajaxText.html("<img src=/Content/img/loading-dir.gif />");
+                                });
+
+                            }, 2000);
+
+                            newCatInputtext.val("");
+                            var toAppend = $("table#pages tbody tr:last").clone();
+                            toAppend.attr("id", "id_", data);
+                            toAppend.find("#item_Name").val(newCatA);
+                            toAppend.find("a.delete").attr("href", "/Admin/Shop/DeleteCatagory/" + data);
+                            table.append(toAppend);
+                            table.sortable("refresh");
+
+                        }
+
+                    }
+                });
+            });
+
+            /////////////////////////////////////////
+
+            /*
+
+
+            /*
+             Delete Confirmation  Funciton
+             */
+            //$('body').on("click", "a.delete", function () {
+
+                $('a.delete').click(function () {
+               
+                if (!confirm("Confirm Page Deletion.?")) return false;
+            });
+            /////////////////////////////////////////
+
+
+            /*
+           Edit Catagory/reName Catagory  Funciton
+           */
+            var originalTextBoxValue;
+
+            $("table#pages input.text-box").dblclick(function () {
+                originalTextBoxValue = $(this).val();
+                $(this).attr("readonly", false);
+
+            });
+
+            $("table#pages input.text-box").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    $(this).blur();
+                }
+
+            });
+
+            $("table#pages input.text-box").blur(function () {
+                var $this = $(this);
+                var ajaxDiv = $this.parent().find(".ajacDivTd");
+
+                var newCataName = $(this).val();
+
+                var id = $this.parent().parent().attr("id").substring(3);
+                var url = "/Admin/Shop/EditCatagory";
+                if (newCataName.length < 2) {
+                    alert("Catagory Name must be at least 2 charactoristic long...");
+                    $this.attr("readonly", false);
+                    return false;
+                }
+
+                $.post(url, { newCataName: newCataName, id: id }, function (data) {
+                    var response = data.trim();
+                    if (response == "titletaken") {
+                        $this.val(originalTextBoxValue);
+                        ajaxDiv.html("<span class='alert alert-danger'>This title is Already taken..!</span>").show();
+                    } else {
+                        ajaxDiv.html("<span class='alert alert-success'>Catagory Name has been changed...!</span>").show();
+                    }
+                    setTimeout(function () {
+                        ajaxDiv.fadeOut(function () {
+                            ajaxDiv.html("");
+
+                        });
+
+                    }, 2000);
+                }).done(function () {
+                    $this.attr("readonly", true);
+                });
+            });
+           
+            /////////////////////////////////////////
+
+
+
+
+
+
+
+            /*
+         Sorting Catagories Pages  Funciton
+         */
+            $("table#pages tbody").sortable({
+
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var idss = $("table#pages tbody").sortable("serialize");
+                    //console.log(idss)
+                    var url = "/Admin/Shop/ReorderCatagories";
+                    $.post(url, idss, function (data) {
+                    });
+                }
+
+
+            });
+
+            /////////////////////////////////////////
+
+        });
+    </script>
+
+
+
+}
